@@ -1,12 +1,6 @@
-/*
- * client-test.h
- *
- *  Created on: Apr 16, 2020
- *      Author: madd
- */
 
-#ifndef CLIENT_TEST_H_
-#define CLIENT_TEST_H_
+#ifndef CLIENTE_H_
+#define CLIENTE_H_
 
 #include <stdio.h>
 #include <stdlib.h>

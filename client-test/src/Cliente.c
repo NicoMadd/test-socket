@@ -9,17 +9,14 @@
  */
 
 
-#include "client-test.h"
+#include "Cliente.h"
 
 #define IP "127.0.0.1"
 #define PUERTO "25445"
 
-/* connect_to
- * ip = ip a conectarse
- * puerto = puerto del socket a conectarse
- * wait_time = tiempo de espera entre reintentos de conexion (en segundos), en caso de fallo
- *
- *
+/* serializar_paquete
+ * paquete = paquete armado sin serializar en un flujo continuo
+ * tam_paquete = tamaño del mismo y del futuro flujo
  */
 
 void* serializar_paquete(t_paquete* paquete, int tam_paquete){
@@ -30,43 +27,15 @@ void* serializar_paquete(t_paquete* paquete, int tam_paquete){
 	offset += sizeof(uint32_t);
 	memcpy(stream + offset, &(paquete->buffer->size), sizeof(uint32_t));
 	offset += sizeof(uint32_t);
-	memcpy(stream + offset, &(paquete->buffer->stream), paquete->buffer->size);
+	memcpy(stream + offset, (paquete->buffer->stream), paquete->buffer->size);
 
 	return stream;
 }
 
-void* serializar_buffer(t_buffer* buffer){
-	void* stream = malloc(buffer->size + 2*sizeof(uint32_t));
-	int offset = 0;
-	printf("%d", MENSAJE);
-	op_code codigo_operacion = MENSAJE;
-
-	memcpy(stream, &(codigo_operacion), sizeof(uint32_t));
-	offset += sizeof(uint32_t);
-	memcpy(stream + offset, &(buffer->size), sizeof(uint32_t));
-	offset += sizeof(uint32_t);
-	memcpy(stream + offset, &(buffer->stream), buffer->size);
-
-	return stream;
-}
-
-void deserializar_buffer(int codigo_operacion, t_buffer* buffer){
-	char* mensaje;
-	puts("llega al switch");
-	printf(" cod_op:%d\n",codigo_operacion);
-	switch(codigo_operacion){
-		case MENSAJE:
-			puts("entra a MENSAJE");
-			memcpy(&mensaje,&(buffer->stream), buffer->size);
-			puts(mensaje);
-			break;
-		default:
-			puts("default");
-			break;
-	}
-
-}
-
+/* enviar_mensaje
+ * socket_cliente = socket para enviar el mensaje
+ * mensaje = mensaje normal, sin serializacion ni empaquetado
+ */
 
 void enviar_mensaje(int socket_cliente, char* mensaje){
 	t_buffer* buffer = malloc(sizeof(t_buffer));
@@ -75,9 +44,8 @@ void enviar_mensaje(int socket_cliente, char* mensaje){
 	void* stream = malloc(buffer->size);
 	memcpy(stream, mensaje, buffer->size);
 	buffer->stream = stream;
-	t_paquete* paquete = malloc(sizeof(t_paquete));
+	t_paquete* paquete = malloc(sizeof(t_paquete)); //ARMADO DEL PAQUETE
 
-	void* data = serializar_buffer(buffer);
 	paquete->codigo_operacion = MENSAJE;
 	paquete->buffer = buffer;
 
@@ -85,13 +53,14 @@ void enviar_mensaje(int socket_cliente, char* mensaje){
 	void* data_a_enviar = serializar_paquete(paquete,tam_paquete);
 
 	int bytes_enviados = send(socket_cliente, data_a_enviar, tam_paquete, 0);
-	printf("bytes enviados: %d", bytes_enviados);
-
-	int op_code;
-	memcpy(&op_code,data_a_enviar,sizeof(uint32_t));
-	memcp
-
 }
+
+
+/* connect_to
+ * ip = ip a conectarse
+ * puerto = puerto del socket a conectarse
+ * wait_time = tiempo de espera entre reintentos de conexion (en segundos), en caso de fallo
+ */
 
 int connect_to(char* ip, char* puerto,int wait_time){
 	struct addrinfo hints;
@@ -116,8 +85,6 @@ int connect_to(char* ip, char* puerto,int wait_time){
 		usleep(wait_time*1000000);
 	}
 
-	printf("socket_servidor: %d", socket_cliente);
-
 	freeaddrinfo(server_info);
 
 	return socket_cliente;
@@ -130,6 +97,4 @@ int main(void) {
 	enviar_mensaje(socket_servidor, "Feliz cumple Fabian!");
 	puts("Conectado con exito!");
 	return EXIT_SUCCESS;
-
-
 }

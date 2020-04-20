@@ -5,8 +5,8 @@
  *      Author: madd
  */
 
-#ifndef SERVER_TEST_H_
-#define SERVER_TEST_H_
+#ifndef SERVIDOR_H_
+#define SERVIDOR_H_
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -36,6 +36,6 @@ typedef struct{
 
 pthread_t pthread;
 
-
+void esperar_cliente(int socket_servidor);
 
 #endif /* SERVER_TEST_H_ */
